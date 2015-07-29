@@ -1,6 +1,6 @@
-from scrapy.item import Item, Field
-from scrapy.contrib.loader import XPathItemLoader
-from scrapy.contrib.loader.processor import TakeFirst
+from scrapy import Item, Field
+from scrapy.loader import ItemLoader
+from scrapy.loader.processors import TakeFirst
 
 
 class Website(Item):
@@ -9,6 +9,6 @@ class Website(Item):
     url = Field()
 
 
-class WebsiteLoader(XPathItemLoader):
+class WebsiteLoader(ItemLoader):
     default_item_class = Website
     default_output_processor = TakeFirst()

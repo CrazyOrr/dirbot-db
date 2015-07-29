@@ -1,3 +1,5 @@
+CREATE DATABASE IF NOT EXISTS dirbot;
+USE dirbot;
 DROP TABLE IF EXISTS website;
 CREATE TABLE website (
   guid CHAR(32) PRIMARY KEY,

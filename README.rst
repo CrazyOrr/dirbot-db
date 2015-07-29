@@ -60,18 +60,14 @@ defined in the class::
     dirbot.pipelines.RequiredFieldsPipeline
 
 
-Storing items in a MySQL database
+Storing items into a database
 ---------------------------------
 
-A pipeline to store (insert or update) scraped items in a MySQL database. This
+A pipeline to store (insert or update) scraped items in a database. This
 pipeline is defined in the class::
 
-    dirbot.pipelines.MySQLStorePipeline
+    dirbot.pipelines.DbPipeline
 
-The database schema is defined in ``db/mysql.sql`` and the settings file
-contains the default ``MYSQL_*`` settings values. The scraped items will be
-stored in the ``website`` database table.
-
-.. note::
-
-    It is *required* to have set up the database schema *before* running the spider.
+The database schema is defined in ``db/script.sql`` and the settings file
+contains the default ``DB_*`` settings values(which is MySQL). The scraped
+items will be stored in the ``website`` table under the ``dirbot`` database.

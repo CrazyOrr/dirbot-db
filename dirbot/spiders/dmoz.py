@@ -1,10 +1,9 @@
-from scrapy.spider import BaseSpider
-from scrapy.selector import HtmlXPathSelector
+import scrapy
 
 from dirbot.items import WebsiteLoader
 
 
-class DmozSpider(BaseSpider):
+class DmozSpider(scrapy.Spider):
     name = "dmoz"
     allowed_domains = ["dmoz.org"]
     start_urls = [
@@ -20,8 +19,7 @@ class DmozSpider(BaseSpider):
         @url http://www.dmoz.org/Computers/Programming/Languages/Python/Resources/
         @scrapes name
         """
-        hxs = HtmlXPathSelector(response)
-        sites = hxs.select('//ul[@class="directory-url"]/li')
+        sites = response.xpath('//ul[@class="directory-url"]/li')
 
         for site in sites:
             il = WebsiteLoader(response=response, selector=site)

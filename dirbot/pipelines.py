@@ -1,6 +1,6 @@
 from datetime import datetime
 from hashlib import md5
-from scrapy import log
+
 from scrapy.exceptions import DropItem
 from twisted.enterprise import adbapi
 
@@ -33,8 +33,8 @@ class RequiredFieldsPipeline(object):
         return item
 
 
-class MySQLStorePipeline(object):
-    """A pipeline to store the item in a MySQL database.
+class DbPipeline(object):
+    """A pipeline to store the item in a database.
 
     This implementation uses Twisted's asynchronous database API.
     """
@@ -43,17 +43,17 @@ class MySQLStorePipeline(object):
         self.dbpool = dbpool
 
     @classmethod
-    def from_settings(cls, settings):
-        dbargs = dict(
-            host=settings['MYSQL_HOST'],
-            db=settings['MYSQL_DBNAME'],
-            user=settings['MYSQL_USER'],
-            passwd=settings['MYSQL_PASSWD'],
-            charset='utf8',
-            use_unicode=True,
-        )
-        dbpool = adbapi.ConnectionPool('MySQLdb', **dbargs)
+    def from_crawler(cls, crawler):
+        dbapiname = crawler.settings.get('DB_API_NAME')
+        dbargs = crawler.settings.get('DB_ARGS')
+        dbpool = adbapi.ConnectionPool(dbapiname, **dbargs)
         return cls(dbpool)
+
+    def open_spider(self, spider):
+        pass
+
+    def close_spider(self, spider):
+        self.dbpool.close()
 
     def process_item(self, item, spider):
         # run db query in the thread pool
@@ -69,7 +69,7 @@ class MySQLStorePipeline(object):
     def _do_upsert(self, conn, item, spider):
         """Perform an insert or update."""
         guid = self._get_guid(item)
-        now = datetime.utcnow().replace(microsecond=0).isoformat(' ')
+        now = datetime.now().replace(microsecond=0).isoformat(' ')
 
         conn.execute("""SELECT EXISTS(
             SELECT 1 FROM website WHERE guid = %s
@@ -82,18 +82,18 @@ class MySQLStorePipeline(object):
                 SET name=%s, description=%s, url=%s, updated=%s
                 WHERE guid=%s
             """, (item['name'], item['description'], item['url'], now, guid))
-            spider.log("Item updated in db: %s %r" % (guid, item))
+            spider.logger.info("Item updated in db: %s %r" % (guid, item))
         else:
             conn.execute("""
                 INSERT INTO website (guid, name, description, url, updated)
                 VALUES (%s, %s, %s, %s, %s)
             """, (guid, item['name'], item['description'], item['url'], now))
-            spider.log("Item stored in db: %s %r" % (guid, item))
+            spider.logger.info("Item stored in db: %s %r" % (guid, item))
 
     def _handle_error(self, failure, item, spider):
         """Handle occurred on db interaction."""
         # do nothing, just log
-        log.err(failure)
+        spider.logger.error(failure)
 
     def _get_guid(self, item):
         """Generates an unique identifier for a given item."""
