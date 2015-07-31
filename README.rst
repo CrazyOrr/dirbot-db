@@ -4,7 +4,7 @@ dirbot
 
 This is a Scrapy project to scrape websites from public web directories.
 
-This project is only meant for educational purposes.
+This project is licensed under the terms of the MIT license.
 
 Items
 =====
